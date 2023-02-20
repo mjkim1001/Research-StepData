@@ -1,4 +1,4 @@
-# Zero-Inflated Time-Series Clustering Via Ensemble Thick-Pen Transform
+# ZITS: Zero-Inflated Time-Series Clustering Via Ensemble Thick-Pen Transform
 
 This GitHub repository contains the R code for the paper titled "Zero-Inflated Time-Series Clustering Via Ensemble Thick-Pen Transform" 
 

@@ -1,4 +1,4 @@
-# ZITS
+# Zero-Inflated Time-Series Clustering Via Ensemble Thick-Pen Transform
 
 R code for the paper "Zero-Inflated Time-Series Clustering Via Ensemble Thick-Pen Transform."
 

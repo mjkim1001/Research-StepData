@@ -1,10 +1,8 @@
-# Zero-Inflated Time-Series Clustering Via Ensemble Thick-Pen Transform
+# ZITS
 
-https://ssrn.com/abstract=4272435
+R code for the paper "Zero-Inflated Time-Series Clustering Via Ensemble Thick-Pen Transform."
 
-Focused on clustering physical step count data obtained from a wearable device and proposed a new similarity measure for time-series data based on Thick Pen Transformation.
+by Minji Kim, Hee-Seok Oh and Yaeji Lim, Feb 2023.
 
-
-* high-dimensional time-series data clustering
-* Dataset: physical step count data obtained from a wearable device
-* Language: R
+* ``simulation_code.R`` ; Main simulation code
+Cancel changes

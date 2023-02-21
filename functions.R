@@ -174,7 +174,10 @@ cluster_zits <- function(K, Up, FUN, t1, r1 = 0.5, maxIter = 500, is.median = 1)
     K <- length(clusters)
     if(has_converged){# check for convergence
       end_time <- Sys.time()
-      obj <- sum(apply(pmeasure, 2, function(x) sum(x[clusters[[which.min(x)]]])))
+      obj=0
+      for(i in 1:K){
+        obj = obj+sum(pmeasure[clusters[[i]],i])
+      }
       return(list(clusters = clusters, obj = obj, pivot = pivot))
     }
     itr <- itr + 1

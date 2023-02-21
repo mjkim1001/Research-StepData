@@ -26,14 +26,14 @@ sqBound<-function(x,t,FUN,r=1){
 }
 #Circle pen
 cirBound<-function(x,t,FUN,r=1){
-  tr<-as.integer(t/2);  bound<-c()
+  half_t<-as.integer(t/2);  bound<-c()
   s<-FUN(1,-1)*r; n<-length(x)
   
   for(i in 1:n){
     temp<-c()
-    if( (i-tr) < 1 ) { K <- (1:(i+tr))
-    }else if( (i+tr) > n ){ K <- ((i-tr):n)
-    }else{ K <- ((i-tr):(i+tr))}
+    if( (i-half_t) < 1 ) { K <- (1:(i+half_t))
+    }else if( (i+half_t) > n ){ K <- ((i-half_t):n)
+    }else{ K <- ((i-half_t):(i+half_t))}
     
     for (k in K){
       temp<- append(temp,x[k]+s*sqrt((t^2)/4-(k-i)^2))

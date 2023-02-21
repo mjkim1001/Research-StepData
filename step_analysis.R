@@ -337,6 +337,27 @@ for(k in c(2,5)){
   
 }
 
+  
+
+###############  cluster validation  ############### 
+
+clust_val<-matrix(nrow=4, ncol=4)
+df2=dist(t(data))
+for(j in 1:2){
+ clust_stats <- cluster.stats(df2,  result_step[c(2,5)[j],]  )
+ clust_val[j,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy ,clust_stats $ch),3)
+ }
+ clust_stats <- cluster.stats((df2),  yhat_funfem)
+ clust_val[3,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy,clust_stats $ch ),3)
+ 
+ 
+ clust_stats <- cluster.stats((df2),  yhat_hddc)
+ clust_val[4,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy,clust_stats $ch ),3)
+ 
+ 
+ colnames(clust_val)=c('Dunn','silwidth','entropy','CH')
+ rownames(clust_val)=c('tau20','tau100','FEM','HDDC')
+ clust_val
 
 
 ########
@@ -383,7 +404,6 @@ axis(1, at=seq(0,1,0.2), labels=sprintf("group%d",1:K))
 
 
 
-
 par(mfrow=c(1,2))
 case=  order( apply(step.list[[67]][1:(60*3),],2,sum) , decreasing = T)[1]
 #case=  order( apply(step.list[[67]],2,sum) )[32]
@@ -400,25 +420,4 @@ case=  order( apply(step.list[[67]][1:(60*3),],2,sum) , decreasing = T)[1]
     lines(tp,step.list[[67]][,case],type='l')
     
   
-  
-
-###############  cluster validation  ############### 
-
-clust_val<-matrix(nrow=4, ncol=4)
-df2=dist(t(data))
-for(j in 1:2){
- clust_stats <- cluster.stats(df2,  result_step[c(2,5)[j],]  )
- clust_val[j,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy ,clust_stats $ch),3)
- }
- clust_stats <- cluster.stats((df2),  yhat_funfem)
- clust_val[3,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy,clust_stats $ch ),3)
- 
- 
- clust_stats <- cluster.stats((df2),  yhat_hddc)
- clust_val[4,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy,clust_stats $ch ),3)
- 
- 
- colnames(clust_val)=c('Dunn','silwidth','entropy','CH')
- rownames(clust_val)=c('tau20','tau100','FEM','HDDC')
- clust_val
 

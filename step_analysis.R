@@ -1,4 +1,4 @@
-source("./read_stepdata.R")
+source("./step_readData.R")
 
 dim(step) ## input: 1440 * 21394
 
@@ -384,11 +384,6 @@ axis(1, at=seq(0,1,0.2), labels=sprintf("group%d",1:K))
 
 
 
-
-
-
-
-
 par(mfrow=c(1,2))
 case=  order( apply(step.list[[67]][1:(60*3),],2,sum) , decreasing = T)[1]
 #case=  order( apply(step.list[[67]],2,sum) )[32]
@@ -404,7 +399,6 @@ case=  order( apply(step.list[[67]][1:(60*3),],2,sum) , decreasing = T)[1]
     polygon( c(tp,rev(tp)) ,c(sqBound_es(step.list[[67]][,case], 100, max), rep(0, 1440)),col="skyblue" )
     lines(tp,step.list[[67]][,case],type='l')
     
-  
   
   
 

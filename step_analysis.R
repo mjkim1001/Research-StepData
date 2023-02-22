@@ -1,4 +1,4 @@
-source("./step_readData.R")
+source("./step_readData.R") ## Load step data
 
 dim(step) ## input: 1440 * 21394
 
@@ -7,6 +7,7 @@ dim(step) ## input: 1440 * 21394
 ### 79 individual
 length(step.list)
 
+### count the number of days for each individual, print the maximum and range
 num.day<-vector()
 for(i in 1: length(step.list) ){
     num.day[i]=ncol(step.list[[i]])
@@ -24,15 +25,17 @@ result_step<-matrix(nrow=length(t1_index), ncol=ncol(step))
 for(k in 1:length(t1_index)){
   t1=t1_index[k]
   r1=0.2
-  Up_step = prepare_up(step,FUN=sqBound_es,t1,r1) ## Ensemble pen result
+  Up_step = prepare_up(step,FUN=sqBound_es,t1,r1) 
+  # calculate the upper bound for step data
   
   a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
+  # cluster the data based on the calculated upper bound
   yhat1=vector()
   for(j in 1:K){
     yhat1[a1$e[[j]]]=j
   }
   result_step[k,]=yhat1
-
+  # save the clustering result in the results matrix
 }
 
 table( result_step[k,])
@@ -54,26 +57,26 @@ for(k in 1:length(t1_index)){
   
   K_cv=5
   folds <- cvFolds(ncol(data), K=K_cv)
+  # set up variables for cross-validation
   
   temp_error_si<-vector()
   for(i in 1:K_cv){
     train <- data[,folds$subsets[folds$which != i] ] #Set the training set
     validation <- data[,folds$subsets[folds$which == i] ] #Set the validation set
-    Up_step = prepare_up(train,FUN=sqBound_es,t1,r1) ## Ensemble pen result
-    
+    Up_step = prepare_up(train,FUN=sqBound_es,t1,r1)
     a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
     for(l in 1:K){
       a1$pivot[,l]= apply( log(Up_step)[ ,a1$e[[l]]],1, median)}
-    
-    Up_test = prepare_up(validation,FUN=sqBound_es,t1,r1) ## Ensemble pen result
-    
+    # cluster the training set and calculate pivots
+      
+    Up_test = prepare_up(validation,FUN=sqBound_es,t1,r1)
     pmeasure=matrix(nrow=ncol(Up_test) , ncol=K)
     for(clstr in 1:K){
       for(j in 1:ncol(Up_test)){
         pmeasure[j,clstr] = l1_mean(a1$pivot[,clstr],log(Up_test[,j]))
       }
     }
-    
+    # calculate distance between each validation point and the pivots
     yhat=apply(pmeasure,1, which.min) 
     #assign each validation set to the pivots derived using train set
     
@@ -82,16 +85,14 @@ for(k in 1:length(t1_index)){
     temp_error_si[i]= summary(si2)$avg.width
     
   }
-  
   cv_error[k]=mean(temp_error_si)
-  
 }
 
 
 opt_k=which.max(cv_error)
 opt_k 
 t1=t1_index[opt_k] #optimal thickness
-Up_step = prepare_up(data,FUN=sqBound_es,t1,r1) ## Ensemble pen result
+Up_step = prepare_up(data,FUN=sqBound_es,t1,r1)
 
 a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
 yhat=vector()
@@ -106,29 +107,31 @@ cv_result=yhat
 ################## Functional Clustering  ######################
 ################################################################
 
+###Cluster the functional data using funFEM
 basis <- create.fourier.basis(c(0, nrow(data)), nbasis=11)
 fdobj <- smooth.basis(1:nrow(data), data,basis)$fd
-cl.sinu = funFEM(fdobj, K=K, init="kmeans", model="all")
+cl.fun = funFEM(fdobj, K=K, init="kmeans", model="all")
 elements = list()
 for(c in 1:K){
   # get the point of cluster c
-  elements[[c]] <- which(cl.sinu$cls == c)
+  elements[[c]] <- which(cl.fun$cls == c)
 }
 yhat_funfem=vector()
 for(l in 1:K ){
   yhat_funfem[elements[[l]]]=l
 }
 
-
+###Cluster the functional data using funHDDC
 res.uni <- funHDDC(fdobj,K=K,model="AkBkQkDk",init="kmeans",threshold=0.2)
   
 yhat_hddc= res.uni$class
 
   
-### DTW cluster
+###Cluster the functional data using DTW clustering
 sam_id=sample(ncol(data), 150)
 pc.l2 <-tsclust(t(data[,sam_id]), k = K,  distance = "dtw_basic", centroid = "pam",seed = 1, trace = FALSE,  control = partitional_control(nrep = 1L))
 yhat_dtw=cl_class_ids((pc.l2))
+
 
 ###############  Plots for comparison methods  ############### 
 tp = seq(as.POSIXct("00:00:00",format="%H:%M"),
@@ -139,7 +142,6 @@ for(k in c(2,5)){
   
   aa=(table(result_step[k,]))
 
-  
   plot( tp, apply(step[,which(result_step[k,]==1)],1, mean), type='n', ylab='', xlab='time', col=1, 
         main=paste('Thickness - ',t1_index[k] ),  lwd=2, ylim=c(0,23)) 
 #axis(side=1, at=seq(1, length(tp), length.out=7), labels=tp[seq(1, length(tp), length.out=7)])
@@ -225,32 +227,8 @@ for(k in c(2,5)){
 }
 
 
-##########   Only one person  ########## ########## ########## 
-library(clusterSim)
 
-dim(step.list[[67]])
-
-
-for(tau in c(20,100)){
-  Up_step = prepare_up(step.list[[67]],FUN=sqBound_es,t1,r1) ## Ensemble pen result
-  
-  fun.step <- function(x,k, t1=tau ){
-    print(k)
-    a = cluster_zits(K=k,Up=x, FUN=l1_mean ,t1,r1=0.2,is.median=T)
-    clusters = rep(NA, ncol(step.list[[67]]))
-    for(c in 1:k){
-      clusters[(a$ls[[ which.min(a$obj) ]]$e)[[c]]] = c
-    }
-    return(list(cluster = clusters))
-  }
-  
-  
-  gap.step= clusGap(Up_step,fun.step,10)
-  plot(gap.step)
-}
-
-
-###############  Plot  ############### 
+###############  67th Individual  ############### 
 ID=67
 order(table(people.save))
 
@@ -300,7 +278,7 @@ dim(result_1_step)
 
 
 
-###############  Plot 67th  ############### 
+###############  Plot results for 67th individual  ############### 
 tp = seq(as.POSIXct("00:00:00",format="%H:%M"),
          as.POSIXct("23:59:00",format="%H:%M"), by = "1 min")
 

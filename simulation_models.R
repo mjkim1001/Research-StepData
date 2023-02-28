@@ -172,6 +172,44 @@ data_generation=function(n=100, TT=256, model='1A'){
     x[[2]]=x2
     
   }
+  
+  ### case 2A
+  
+  if(model=="2A_mean0"){
+    
+    x1=x2=matrix(0, nrow=n, ncol=TT)
+    
+    for(i in 1:n){
+      phi1<-phi2<-vector()
+      
+      for(t in 1:TT){
+        phi1[t]= -0.8*(1-0.7*cos(pi*t/TT))
+      }
+      phi2[1:TT]= -0.81
+      
+      e  = rnorm(TT ,0,1)
+      
+      for(t in 3:TT){
+        x1[i,t] = phi1[t] * x1[i,t-1] + phi2[t] * x1[i,t-2] +e[t]
+      }
+      phi1<-phi2<-vector()
+      
+      for(t in 1:TT){
+        phi1[t]= -0.8*(1-0.001*cos(pi*t/TT))
+      }
+      phi2[1:TT]= -0.81
+      
+      e  = rnorm(TT ,0,1)
+      for(t in 3:TT){
+        x2[i,t] = phi1[t] * x2[i,t-1] + phi2[t] * x2[i,t-2] +e[t]
+      }
+    }
+    x<-list()
+    x[[1]]=x1
+    x[[2]]=x2
+    
+  }
+  
   ### case 2B
   if(model=="2B"){
     
@@ -224,44 +262,6 @@ data_generation=function(n=100, TT=256, model='1A'){
     
   }
   
-  
-  ### case 2A
-  
-  if(model=="2A_mean0"){
-    
-    x1=x2=matrix(0, nrow=n, ncol=TT)
-    
-    for(i in 1:n){
-      phi1<-phi2<-vector()
-      
-      for(t in 1:TT){
-        phi1[t]= -0.8*(1-0.7*cos(pi*t/TT))
-      }
-      phi2[1:TT]= -0.81
-      
-      e  = rnorm(TT ,0,1)
-      
-      for(t in 3:TT){
-        x1[i,t] = phi1[t] * x1[i,t-1] + phi2[t] * x1[i,t-2] +e[t]
-      }
-      phi1<-phi2<-vector()
-      
-      for(t in 1:TT){
-        phi1[t]= -0.8*(1-0.001*cos(pi*t/TT))
-      }
-      phi2[1:TT]= -0.81
-      
-      e  = rnorm(TT ,0,1)
-      for(t in 3:TT){
-        x2[i,t] = phi1[t] * x2[i,t-1] + phi2[t] * x2[i,t-2] +e[t]
-      }
-    }
-    x<-list()
-    x[[1]]=x1
-    x[[2]]=x2
-    
-  }
-  
   if(model=="block"){
     h = c(-1,1,-1,1)*runif(4,0,20) 
     h [5] = -sum(h[1:4]) 
@@ -281,9 +281,7 @@ data_generation=function(n=100, TT=256, model='1A'){
       } 
       blk = blk[,-1]
       x[[k]]=t(blk)
-    } 
-    
-    
+    }
   }
   
   
@@ -292,6 +290,28 @@ data_generation=function(n=100, TT=256, model='1A'){
     
     for(i in 1:n){
       sigma=0.1
+      mu1=runif(1, 3,4)
+      mu2=runif(1, 2,10)
+      lambda1=rnorm(TT,mu1 , sigma)
+      lambda2=rnorm(TT, mu2, sigma)
+      si=runif(1, 0.4, 0.7)
+      x1[i,]= rzip(n = TT,  lambda = lambda1, omega = si)
+      x2[i,]= rzip(n = TT, lambda = lambda2,  omega = si)
+    }
+    print(length( which(x1==0) ) / length(x1) )
+    #par(mfrow=c(1,2))
+    # plot(x1[1,], type='b', ylim=range(x1,x2))
+    #    plot(x2[1,], type='b', ylim=range(x1,x2))	 
+    x<-list()
+    x[[1]]=x1
+    x[[2]]=x2
+  }
+  
+  if(model=='4B'){
+    x1=x2=matrix(0, nrow=n, ncol=TT)
+    
+    for(i in 1:n){
+      sigma=0.5
       mu1=runif(1, 3,4)
       mu2=runif(1, 2,10)
       lambda1=rnorm(TT,mu1 , sigma)

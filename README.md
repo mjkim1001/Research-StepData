@@ -10,12 +10,12 @@ The repository includes the following files:
 
 * ``simulation_models.R`` ; Data generation for simulation models.
 
-* ``simulation_analysis.R`` ; ZITS clustering and comparison methods for simulation data, which loads functions.R and simulation_models.R.
+* ``simulation_analysis.R`` ; ZITS clustering and comparison methods for simulation data, which loads "functions.R" and "simulation_models.R".
 
-* ``covid_analysis.R`` ; ZITS clustering and comparison methods for covid-19 data, which loads functions.R.
+* ``covid_analysis.R`` ; ZITS clustering and comparison methods for covid-19 data, which loads "functions.R".
 
 * ``step_readData.R`` ; Data load for step count data.
 
-* ``step_analysis.R`` ; ZITS clustering and comparison methods for step count data, which loads functions.R and step_readData.R.
+* ``step_analysis.R`` ; ZITS clustering and comparison methods for step count data, which loads "functions.R" and "step_readData.R".
 
 The COVID-19 data is publicly available and therefore provided in this repository, but the step count data is not publicly available. If you have any requests regarding the dataset, please contact mkim5@unc.edu.

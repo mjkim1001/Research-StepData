@@ -7,6 +7,7 @@ library(cvTools)
 library(clue)
 
 source("./simulation_models.R")
+source("./functions.R")
 
 total.n.sim=100
 

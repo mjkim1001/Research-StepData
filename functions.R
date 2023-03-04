@@ -83,8 +83,7 @@ l2_mean<-function(ux,uy){
 ################## Clustering ZITS algorithm ######################
 ################################################################
 ################################################################
-
-# function returns T times N matrix of upper thick pen bound
+# The function returns T times N matrix of upper thick pen bound
 # data : data
 # FUN : gets pen bound functions such as cirBound or sqBound_es
 # t1: thickness, r1: scaling factor
@@ -102,11 +101,14 @@ prepare_up<-function(data,FUN,t1,r1=0.5){
   return(Up)
 }
 
+# The cluster_zits function is a general iterative clustering function. 
+# It takes a dataset as an argument named Up and uses a distance measure called FUN. 
+# The is.median argument determines whether to use the mean or median to get the cluster prototype.
 ##### Input
-# Up: upper thick pen bounds
+# Up: dataset
 # K : number of clusters
 # FUN : distance functions
-# To use our clustering algorithm, pass log(Up) as the input for the "Up" argument 
+# To use our proposed clustering algorithm, pass log(Up) as the input for the "Up" argument 
 # and apply L1 optimization by using FUN<-l1_mean
 ##### Output 
 # e : a list of elements assigned to each cluster

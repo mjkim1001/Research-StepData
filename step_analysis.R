@@ -1,5 +1,5 @@
-source("./step_readData.R") ## Load step data
-
+source("./read_stepdata.R")
+source("./functions.R")
 dim(step) ## input: 1440 * 21394
 
 #step=t(step)
@@ -7,7 +7,6 @@ dim(step) ## input: 1440 * 21394
 ### 79 individual
 length(step.list)
 
-### count the number of days for each individual, print the maximum and range
 num.day<-vector()
 for(i in 1: length(step.list) ){
     num.day[i]=ncol(step.list[[i]])
@@ -17,32 +16,21 @@ which.max(num.day)
 range(num.day)
 
 
-##thick pen 
+###################################################
+############### Number of clusters ################# 
+###################################################
+Up_step = prepare_up(step,FUN=sqBound_es,t1,r1)
+library(parallel)
+ncore= detectCores()
+pam1 <- function(x,k) list(cluster = pam(x,k,metric="manhattan",cluster.only=TRUE))
+#gap.step= clusGap(t(log(Up_step)), pam1,10, B=10, do_parallel=T)
+#saveRDS(gap.step,file="gap.step0223.rds")
+gap.step=readRDS("gap.step0223.rds")
+plot(gap.step)
+
+
 K=6
-t1_index=c(10,20,30,50,100)
-result_step<-matrix(nrow=length(t1_index), ncol=ncol(step))
 
-for(k in 1:length(t1_index)){
-  t1=t1_index[k]
-  r1=0.2
-  Up_step = prepare_up(step,FUN=sqBound_es,t1,r1) 
-  # calculate the upper bound for step data
-  
-  a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
-  # cluster the data based on the calculated upper bound
-  yhat1=vector()
-  for(j in 1:K){
-    yhat1[a1$e[[j]]]=j
-  }
-  result_step[k,]=yhat1
-  # save the clustering result in the results matrix
-}
-
-table( result_step[k,])
-dim(result_step)
-
-
-save(result_step, file='step_result.RData')
 ########################################################
 ############## cv code for thickness ####################
 ########################################################
@@ -57,26 +45,26 @@ for(k in 1:length(t1_index)){
   
   K_cv=5
   folds <- cvFolds(ncol(data), K=K_cv)
-  # set up variables for cross-validation
   
   temp_error_si<-vector()
   for(i in 1:K_cv){
     train <- data[,folds$subsets[folds$which != i] ] #Set the training set
     validation <- data[,folds$subsets[folds$which == i] ] #Set the validation set
     Up_step = prepare_up(train,FUN=sqBound_es,t1,r1)
+    
     a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
     for(l in 1:K){
       a1$pivot[,l]= apply( log(Up_step)[ ,a1$e[[l]]],1, median)}
-    # cluster the training set and calculate pivots
-      
+    
     Up_test = prepare_up(validation,FUN=sqBound_es,t1,r1)
+    
     pmeasure=matrix(nrow=ncol(Up_test) , ncol=K)
     for(clstr in 1:K){
       for(j in 1:ncol(Up_test)){
         pmeasure[j,clstr] = l1_mean(a1$pivot[,clstr],log(Up_test[,j]))
       }
     }
-    # calculate distance between each validation point and the pivots
+    
     yhat=apply(pmeasure,1, which.min) 
     #assign each validation set to the pivots derived using train set
     
@@ -85,14 +73,16 @@ for(k in 1:length(t1_index)){
     temp_error_si[i]= summary(si2)$avg.width
     
   }
+  
   cv_error[k]=mean(temp_error_si)
+  
 }
 
 
 opt_k=which.max(cv_error)
 opt_k 
 t1=t1_index[opt_k] #optimal thickness
-Up_step = prepare_up(data,FUN=sqBound_es,t1,r1)
+Up_step = prepare_up(data,FUN=sqBound_es,t1,r1) ## Ensemble pen result
 
 a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
 yhat=vector()
@@ -103,35 +93,61 @@ for(l in 1:K ){
 
 cv_result=yhat
 
+################################################################
+########################## Do Clustering  ######################
+################################################################
+
+## various t values ####
+t1_index=c(10,20,30,50,100)
+result_step<-matrix(nrow=length(t1_index), ncol=ncol(step))
+
+for(k in 1:length(t1_index)){
+  t1=t1_index[k]
+  r1=0.2
+  Up_step = prepare_up(step,FUN=sqBound_es,t1,r1)
+  
+  a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
+  yhat1=vector()
+  for(j in 1:K){
+    yhat1[a1$e[[j]]]=j
+  }
+  result_step[k,]=yhat1
+  
+}
+
+table( result_step[k,])
+dim(result_step)
+
+
+save(result_step, file='step_result.RData')
+
 ########################  comparison  ######################## 
 ################## Functional Clustering  ######################
 ################################################################
 
-###Cluster the functional data using funFEM
 basis <- create.fourier.basis(c(0, nrow(data)), nbasis=11)
 fdobj <- smooth.basis(1:nrow(data), data,basis)$fd
-cl.fun = funFEM(fdobj, K=K, init="kmeans", model="all")
+cl.sinu = funFEM(fdobj, K=K, init="kmeans", model="all")
 elements = list()
 for(c in 1:K){
   # get the point of cluster c
-  elements[[c]] <- which(cl.fun$cls == c)
+  elements[[c]] <- which(cl.sinu$cls == c)
 }
 yhat_funfem=vector()
 for(l in 1:K ){
   yhat_funfem[elements[[l]]]=l
 }
 
-###Cluster the functional data using funHDDC
+
 res.uni <- funHDDC(fdobj,K=K,model="AkBkQkDk",init="kmeans",threshold=0.2)
   
 yhat_hddc= res.uni$class
 
   
-###Cluster the functional data using DTW clustering
+### DTW cluster
 sam_id=sample(ncol(data), 150)
 pc.l2 <-tsclust(t(data[,sam_id]), k = K,  distance = "dtw_basic", centroid = "pam",seed = 1, trace = FALSE,  control = partitional_control(nrep = 1L))
 yhat_dtw=cl_class_ids((pc.l2))
-
 
 ###############  Plots for comparison methods  ############### 
 tp = seq(as.POSIXct("00:00:00",format="%H:%M"),
@@ -142,6 +158,7 @@ for(k in c(2,5)){
   
   aa=(table(result_step[k,]))
 
+  
   plot( tp, apply(step[,which(result_step[k,]==1)],1, mean), type='n', ylab='', xlab='time', col=1, 
         main=paste('Thickness - ',t1_index[k] ),  lwd=2, ylim=c(0,23)) 
 #axis(side=1, at=seq(1, length(tp), length.out=7), labels=tp[seq(1, length(tp), length.out=7)])
@@ -227,8 +244,32 @@ for(k in c(2,5)){
 }
 
 
+##########   Only one person  ########## ########## ########## 
+library(clusterSim)
 
-###############  67th Individual  ############### 
+dim(step.list[[67]])
+
+
+for(tau in c(20,100)){
+  Up_step = prepare_up(step.list[[67]],FUN=sqBound_es,t1,r1) ## Ensemble pen result
+  
+  fun.step <- function(x,k, t1=tau ){
+    print(k)
+    a = cluster_zits(K=k,Up=x, FUN=l1_mean ,t1,r1=0.2,is.median=T)
+    clusters = rep(NA, ncol(step.list[[67]]))
+    for(c in 1:k){
+      clusters[(a$ls[[ which.min(a$obj) ]]$e)[[c]]] = c
+    }
+    return(list(cluster = clusters))
+  }
+  
+  
+  gap.step= clusGap(Up_step,fun.step,10)
+  plot(gap.step)
+}
+
+
+###############  Plot  ############### 
 ID=67
 order(table(people.save))
 
@@ -278,7 +319,7 @@ dim(result_1_step)
 
 
 
-###############  Plot results for 67th individual  ############### 
+###############  Plot 67th  ############### 
 tp = seq(as.POSIXct("00:00:00",format="%H:%M"),
          as.POSIXct("23:59:00",format="%H:%M"), by = "1 min")
 
@@ -315,27 +356,6 @@ for(k in c(2,5)){
   
 }
 
-  
-
-###############  cluster validation  ############### 
-
-clust_val<-matrix(nrow=4, ncol=4)
-df2=dist(t(data))
-for(j in 1:2){
- clust_stats <- cluster.stats(df2,  result_step[c(2,5)[j],]  )
- clust_val[j,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy ,clust_stats $ch),3)
- }
- clust_stats <- cluster.stats((df2),  yhat_funfem)
- clust_val[3,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy,clust_stats $ch ),3)
- 
- 
- clust_stats <- cluster.stats((df2),  yhat_hddc)
- clust_val[4,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy,clust_stats $ch ),3)
- 
- 
- colnames(clust_val)=c('Dunn','silwidth','entropy','CH')
- rownames(clust_val)=c('tau20','tau100','FEM','HDDC')
- clust_val
 
 
 ########
@@ -382,6 +402,12 @@ axis(1, at=seq(0,1,0.2), labels=sprintf("group%d",1:K))
 
 
 
+
+
+
+
+
+
 par(mfrow=c(1,2))
 case=  order( apply(step.list[[67]][1:(60*3),],2,sum) , decreasing = T)[1]
 #case=  order( apply(step.list[[67]],2,sum) )[32]
@@ -398,4 +424,26 @@ case=  order( apply(step.list[[67]][1:(60*3),],2,sum) , decreasing = T)[1]
     lines(tp,step.list[[67]][,case],type='l')
     
   
+  
+  
+
+###############  cluster validation  ############### 
+
+clust_val<-matrix(nrow=4, ncol=4)
+df2=dist(t(data))
+for(j in 1:2){
+ clust_stats <- cluster.stats(df2,  result_step[c(2,5)[j],]  )
+ clust_val[j,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy ,clust_stats $ch),3)
+ }
+ clust_stats <- cluster.stats((df2),  yhat_funfem)
+ clust_val[3,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy,clust_stats $ch ),3)
+ 
+ 
+ clust_stats <- cluster.stats((df2),  yhat_hddc)
+ clust_val[4,]=round(c( clust_stats $dunn, clust_stats$avg.silwidth, clust_stats $entropy,clust_stats $ch ),3)
+ 
+ 
+ colnames(clust_val)=c('Dunn','silwidth','entropy','CH')
+ rownames(clust_val)=c('tau20','tau100','FEM','HDDC')
+ clust_val
 

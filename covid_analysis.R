@@ -89,7 +89,7 @@ K=3
 
 t1=5
 r1=0.2
-Up_covid = prepare_up(data,FUN=sqBound_es,t1,r1) ## Ensemble pen result
+Up_covid = prepare_up(data,FUN=sqBound_es,t1,r1) 
 hclusCut <- function(data, k) list(cluster = cutree(hclust(dist(data,method = "manhattan" )), k=k))
 gap.covid <- clusGap(t(log(Up_covid)), FUN = hclusCut, K.max = 10, B = 100)
 plot(gap.covid)
@@ -105,9 +105,9 @@ yhat1=matrix(nrow=ncol(data), ncol=length(t1_index))
 for(k in 1:length(t1_index)){
   t1=t1_index[k]
   r1=0.1
-  Up_covid = prepare_up(data,FUN=sqBound_es,t1,r1) ## Ensemble pen result
+  Up_covid = prepare_up(data,FUN=sqBound_es,t1,r1)
   
-  a1= cluster_zits(K=K,data,Up=log(Up_sinu), FUN=log_mean ,t1,r1,is.median=1)
+  a1= cluster_zits(K=K,Up=log(Up_sinu), FUN=log_mean ,t1,r1,is.median=1)
   yhat=vector()
   for(l in 1:K ){
     yhat[a1$e[[l]]]=l
@@ -219,7 +219,7 @@ for(k in 1:K){
 }
 tb2
 
-
+###############  cluster validation  ############### 
 dim(data)
 clust_val<-matrix(nrow=6, ncol=4)
 df=t(data)

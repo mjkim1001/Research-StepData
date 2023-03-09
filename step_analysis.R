@@ -54,7 +54,7 @@ for(k in 1:length(t1_index)){
     
     a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
     for(l in 1:K){
-      a1$pivot[,l]= apply( log(Up_step)[ ,a1$e[[l]]],1, median)}
+      a1$pivot[,l]= apply( log(Up_step)[ ,a1$clusters[[l]]],1, median)}
     
     Up_test = prepare_up(validation,FUN=sqBound_es,t1,r1)
     
@@ -87,7 +87,7 @@ Up_step = prepare_up(data,FUN=sqBound_es,t1,r1) ## Ensemble pen result
 a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
 yhat=vector()
 for(l in 1:K ){
-  yhat[a1$e[[l]]]=l
+  yhat[a1$clusters[[l]]]=l
 }
 
 
@@ -109,7 +109,7 @@ for(k in 1:length(t1_index)){
   a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
   yhat1=vector()
   for(j in 1:K){
-    yhat1[a1$e[[j]]]=j
+    yhat1[a1$clusters[[j]]]=j
   }
   result_step[k,]=yhat1
   
@@ -258,7 +258,7 @@ for(tau in c(20,100)){
     a = cluster_zits(K=k,Up=x, FUN=l1_mean ,t1,r1=0.2,is.median=T)
     clusters = rep(NA, ncol(step.list[[67]]))
     for(c in 1:k){
-      clusters[(a$ls[[ which.min(a$obj) ]]$e)[[c]]] = c
+      clusters[a1$clusters[[c]]]<-c
     }
     return(list(cluster = clusters))
   }
@@ -308,7 +308,7 @@ for(k in c(2,5)){
   a1= cluster_zits(K=K,Up=log(Up_step), FUN=l1_mean ,t1,r1,is.median=T)
   yhat1=vector()
   for(j in 1:K){
-    yhat1[a1$e[[j]]]=j
+    yhat1[a1$clusters[[j]]]=j
   }
   result_1_step[k,]=yhat1
   

@@ -257,12 +257,11 @@ for(tau in c(20,100)){
     print(k)
     a = cluster_zits(K=k,Up=x, FUN=l1_mean ,t1,r1=0.2,is.median=T)
     clusters = rep(NA, ncol(step.list[[67]]))
-    for(c in 1:k){
-      clusters[a1$clusters[[c]]]<-c
+    for(c in 1:length(a$clusters)){
+      clusters[a$clusters[[c]]]<-c
     }
     return(list(cluster = clusters))
   }
-  
   
   gap.step= clusGap(Up_step,fun.step,10)
   plot(gap.step)

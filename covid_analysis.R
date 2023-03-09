@@ -88,7 +88,7 @@ thick_draw(data[,1], t1, sqBound_es, r=r1, time=F, zeroBound = T,xl = "(a)")
 K=3
 
 t1=5
-r1=0.2
+r1=0.1
 Up_covid = prepare_up(data,FUN=sqBound_es,t1,r1) 
 hclusCut <- function(data, k) list(cluster = cutree(hclust(dist(data,method = "manhattan" )), k=k))
 gap.covid <- clusGap(t(log(Up_covid)), FUN = hclusCut, K.max = 10, B = 100)
@@ -107,10 +107,10 @@ for(k in 1:length(t1_index)){
   r1=0.1
   Up_covid = prepare_up(data,FUN=sqBound_es,t1,r1)
   
-  a1= cluster_zits(K=K,Up=log(Up_sinu), FUN=log_mean ,t1,r1,is.median=1)
+  a1= cluster_zits(K=K,Up=log(Up_covid), FUN=l1_mean ,t1,r1,is.median=1)
   yhat=vector()
   for(l in 1:K ){
-    yhat[a1$e[[l]]]=l
+    yhat[a1$clusters[[l]]]=l
   }
   
   yhat1[,k]=yhat

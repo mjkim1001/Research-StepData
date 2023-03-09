@@ -263,7 +263,7 @@ for(tau in c(20,100)){
     return(list(cluster = clusters))
   }
   
-  gap.step= clusGap(Up_step,fun.step,10)
+  gap.step= clusGap(Up_step,fun.step,10, B=20)
   plot(gap.step)
 }
 

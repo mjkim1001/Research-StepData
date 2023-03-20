@@ -18,6 +18,6 @@ The repository includes the following files:
 
 * ``step_analysis.R`` ; ZITS clustering and comparison methods for step count data, which loads "functions.R" and "step_readData.R".
 
-* ``eda_plots.R`` ; Draw figures for the paper.
+* ``eda_plots.R`` ; Draw figures for the paper using the step dataset.
 
 The COVID-19 data is publicly available and therefore provided in this repository, but the step count data is not publicly available. If you have any requests regarding the dataset, please contact mkim5@unc.edu.

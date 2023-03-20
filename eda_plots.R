@@ -9,6 +9,7 @@ library(progress)
 ################################################################
 ################################################################
 
+source("./read_stepdata.R")
 source("./functions.R")
 
 thick_draw <-function(data,tau,FUN,r=1,time=FALSE,smooth=0, smooth.num=5,zeroBound=TRUE,ymin=NULL,ymax=NULL, xl,col='skyblue'){

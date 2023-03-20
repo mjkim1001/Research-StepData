@@ -78,8 +78,6 @@ dev.off()
 ### EDA histogram of COVID-19 New cases
 hist(data, main='Histogram of COVID-19 New cases', xlab='')
 
-par(mfrow=c(1,3))
-thick_draw(data[,1], t1, sqBound_es, r=r1, time=F, zeroBound = T,xl = "(a)")
 
 
 ###################################################
